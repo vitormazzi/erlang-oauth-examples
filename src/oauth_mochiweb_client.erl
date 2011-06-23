@@ -34,7 +34,7 @@ echo(Client) ->
 echo(Client, Params) ->
   case oauth_client:get(Client, "http://0.0.0.0:8000/echo", Params, querystring) of
     {ok, _Headers, Body} ->
-      {ok, lists:keysort(1, oauth_uri:params_from_string(Body))};
+      {ok, lists:keysort(1, oauth:uri_params_decode(Body))};
     Error ->
       Error
   end.

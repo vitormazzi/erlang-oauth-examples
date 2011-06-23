@@ -84,7 +84,7 @@ serve_echo(Request) ->
             case oauth:verify(Signature, "GET", URL, Params, Consumer, "accesssecret") of
               true ->
                 EchoParams = lists:filter(fun({K, _}) -> not lists:prefix("oauth_", K) end, Params),
-                ok(Request, oauth_uri:params_to_string(EchoParams));
+                ok(Request, oauth:uri_params_encode(EchoParams));
               false ->
                 bad(Request, "invalid signature value.")
             end;

@@ -65,7 +65,7 @@ stop(Client) ->
 %%============================================================================
 
 oauth_get(header, URL, Params, Consumer, Token, TokenSecret) ->
-  Signed = oauth:signed_params("GET", URL, Params, Consumer, Token, TokenSecret),
+  Signed = oauth:sign("GET", URL, Params, Consumer, Token, TokenSecret),
   {AuthorizationParams, QueryParams} = lists:partition(fun({K, _}) -> lists:prefix("oauth_", K) end, Signed),
   Request = {oauth:uri(URL, QueryParams), [oauth:header(AuthorizationParams)]},
   httpc:request(get, Request, [{autoredirect, false}], []);
@@ -81,51 +81,42 @@ init(Consumer) ->
 
 handle_call({get_request_token, URL, Params, ParamsMethod}, _From, State={Consumer}) ->
   case oauth_get(ParamsMethod, URL, Params, Consumer, "", "") of
+    {ok, Response={{_, 200, _}, _, _}} ->
+      RParams = oauth:params_decode(Response),
+      {reply, {ok, oauth:token(RParams)}, {Consumer, RParams}};
     {ok, Response} ->
-      case oauth_http:response_code(Response) of
-        200 ->
-          RParams = oauth_http:response_params(Response),
-          {reply, {ok, oauth:token(RParams)}, {Consumer, RParams}};
-        _ ->
-          {reply, Response, State}
-      end;
+      {reply, Response, State};
     Error ->
       {reply, Error, State}
   end;
 handle_call({get_access_token, URL, Params, ParamsMethod}, _From, State={Consumer, RParams}) ->
   case oauth_get(ParamsMethod, URL, Params, Consumer, oauth:token(RParams), oauth:token_secret(RParams)) of
+    {ok, Response={{_, 200, _}, _, _}} ->
+      AParams = oauth:params_decode(Response),
+      {reply, ok, {Consumer, RParams, AParams}};
     {ok, Response} ->
-      case oauth_http:response_code(Response) of
-        200 ->
-          AParams = oauth_http:response_params(Response),
-          {reply, ok, {Consumer, RParams, AParams}};
-        _ ->
-          {reply, Response, State}
-      end;
+      {reply, Response, State};
     Error ->
       {reply, Error, State}
   end;
 handle_call({get, URL, Params, ParamsMethod}, _From, State={Consumer, _RParams, AParams}) ->
   case oauth_get(ParamsMethod, URL, Params, Consumer, oauth:token(AParams), oauth:token_secret(AParams)) of
-    {ok, Response={{_, Status, _}, Headers, Body}} ->
-      case Status of
-        200 ->
-          case proplists:get_value("content-type", Headers) of
-            undefined ->
-              {reply, {ok, Headers, Body}, State};
-            ContentType ->
-              MediaType = hd(string:tokens(ContentType, ";")),
-              case lists:suffix("/xml", MediaType) orelse lists:suffix("+xml", MediaType) of
-                true ->
-                  {XML, []} = xmerl_scan:string(Body),
-                  {reply, {ok, Headers, XML}, State};
-                false ->
-                  {reply, {ok, Headers, Body}, State}
-              end
-          end;
-        _ ->
-          {reply, Response, State}
+    {ok, {{_, 200, _}, Headers, Body}} ->
+      case proplists:get_value("content-type", Headers) of
+        undefined ->
+          {reply, {ok, Headers, Body}, State};
+        ContentType ->
+          MediaType = hd(string:tokens(ContentType, ";")),
+          case lists:suffix("/xml", MediaType) orelse lists:suffix("+xml", MediaType) of
+            true ->
+              {XML, []} = xmerl_scan:string(Body),
+              {reply, {ok, Headers, XML}, State};
+            false ->
+              {reply, {ok, Headers, Body}, State}
+          end
       end;
+    {ok, Response} ->
+      {reply, Response, State};
     Error ->
       {reply, Error, State}
   end;

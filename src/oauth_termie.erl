@@ -48,7 +48,7 @@ echo(Client, Params) ->
   URL = "http://term.ie/oauth/example/echo_api.php",
   case oauth_client:get(Client, URL, Params, querystring) of
     {ok, _Headers, Body} ->
-      {ok, lists:keysort(1, oauth_uri:params_from_string(Body))};
+      {ok, lists:keysort(1, oauth:uri_params_decode(Body))};
     Error ->
       Error
   end.

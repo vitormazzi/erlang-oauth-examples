@@ -57,7 +57,7 @@ get_feed(Client) ->
   {{_, 302, _}, Headers, _} = oauth_client:get(Client, URL),
   Location = proplists:get_value("location", Headers),
   {_, _, _, _, _, [$?|Params]} = http_uri:parse(Location),
-  Gsessionid = proplists:lookup("gsessionid", oauth_uri:params_from_string(Params)),
+  Gsessionid = proplists:lookup("gsessionid", oauth:uri_params_decode(Params)),
   oauth_client:get(Client, URL, [Gsessionid]).
 
 feed_titles(XML) ->
