@@ -17,7 +17,7 @@
 %%   ...
 %%   5> ok = oauth_twitter:get_access_token(Client, "...VERIFIER (PIN)...").
 %%   ...
-%%   6> {ok, Headers, XML} = oauth_twitter:get_direct_messages(Client).
+%%   6> {ok, Headers, XML} = oauth_twitter:get_favorites(Client).
 %%   ...
 %%
 %% Note that before fetching the access token (step 5) you need to have
@@ -41,6 +41,6 @@ get_access_token(Client, Verifier) ->
   URL = "https://twitter.com/oauth/access_token",
   oauth_client:get_access_token(Client, URL, [{"oauth_verifier", Verifier}]).
 
-get_direct_messages(Client) ->
-  URL = "https://twitter.com/direct_messages.xml",
+get_favorites(Client) ->
+  URL = "https://api.twitter.com/1/favorites.xml",
   oauth_client:get(Client, URL, []).
