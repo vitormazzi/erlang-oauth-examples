@@ -44,3 +44,7 @@ get_access_token(Client, Verifier) ->
 get_favorites(Client) ->
   URL = "https://api.twitter.com/1/favorites.xml",
   oauth_client:get(Client, URL, []).
+
+verify_credentials(Client) ->
+  URL = "https://api.twitter.com/1/account/verify_credentials.xml",
+  oauth_client:get(Client, URL, []).
