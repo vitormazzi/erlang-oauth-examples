@@ -5,7 +5,7 @@
 %%
 %%   $ make
 %%   ...
-%%   $ erl -pa ebin -pa path/to/erlang-oauth/ebin -s crypto -s inets
+%%   $ erl -pa ebin -pa path/to/erlang-oauth/ebin -s crypto -s ssl -s inets
 %%   ...
 %%   1> Consumer = {"...KEY...", "...SECRET...", hmac_sha1}.
 %%   ...
@@ -31,16 +31,16 @@ start(Consumer) ->
   oauth_client:start(Consumer).
 
 get_request_token(Client) ->
-  URL = "http://twitter.com/oauth/request_token",
+  URL = "https://twitter.com/oauth/request_token",
   oauth_client:get_request_token(Client, URL).
 
 authorize_url(Token) ->
-  oauth:uri("http://twitter.com/oauth/authorize", [{"oauth_token", Token}]).
+  oauth:uri("https://twitter.com/oauth/authorize", [{"oauth_token", Token}]).
 
 get_access_token(Client, Verifier) ->
-  URL = "http://twitter.com/oauth/access_token",
+  URL = "https://twitter.com/oauth/access_token",
   oauth_client:get_access_token(Client, URL, [{"oauth_verifier", Verifier}]).
 
 get_direct_messages(Client) ->
-  URL = "http://twitter.com/direct_messages.xml",
+  URL = "https://twitter.com/direct_messages.xml",
   oauth_client:get(Client, URL, []).
