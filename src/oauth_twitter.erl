@@ -17,7 +17,7 @@
 %%   ...
 %%   5> ok = oauth_twitter:get_access_token(Client, "...VERIFIER (PIN)...").
 %%   ...
-%%   6> {ok, Headers, XML} = oauth_twitter:get_favorites(Client).
+%%   6> {ok, Headers, JSON} = oauth_twitter:get_favorites(Client).
 %%   ...
 %%
 %% Note that before fetching the access token (step 5) you need to have
@@ -42,9 +42,9 @@ get_access_token(Client, Verifier) ->
   oauth_client:get_access_token(Client, URL, [{"oauth_verifier", Verifier}]).
 
 get_favorites(Client) ->
-  URL = "https://api.twitter.com/1/favorites.xml",
+  URL = "https://api.twitter.com/1.1/favorites/list.json",
   oauth_client:get(Client, URL, []).
 
 verify_credentials(Client) ->
-  URL = "https://api.twitter.com/1/account/verify_credentials.xml",
+  URL = "https://api.twitter.com/1.1/account/verify_credentials.json",
   oauth_client:get(Client, URL, []).
